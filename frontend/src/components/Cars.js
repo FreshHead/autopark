@@ -5,13 +5,12 @@ import axios from 'axios';
 import ReactTable from 'react-table';
 import "react-table/react-table.css";
 
-
 const CAR_COLUMNS = [
     {
         Header: 'Модель',
         accessor: 'model',
         maxWidth: 250,
-        className: 'centerContent'
+        className: 'centerContent',
     },
     {
         Header: 'Номер машины',
@@ -37,21 +36,37 @@ const CAR_COLUMNS = [
     }
 ];
 
-const root = '/api';
 const names = ['model', 'carNumber', 'region', 'manufactureYear', 'desc'];
 
 class Cars extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = {cars: []};
+        this.state = {
+            data: [],
+            loading: true
+        };
+        this.fetchData = this.fetchData.bind(this);
+
         this.handleSubmit = this.handleSubmit.bind(this);
+
+    }
+
+    fetchData(state, instance) {
+        this.setState({loading: true});
+        axios.get('/api/cars')
+            .then(res => {
+                this.setState({
+                    data: res.data._embedded.cars,
+                    loading: false
+                });
+            }, failure => {
+                console.log(failure);
+            });
     }
 
     componentDidMount() {
-        axios.get('/api/cars').then(response => {
-            this.setState({cars: response.data._embedded.cars});
-        });
+        this.fetchData();
     }
 
     handleSubmit(e) {
@@ -60,25 +75,13 @@ class Cars extends React.Component {
         names.forEach(name => {
             newCar[name] = ReactDOM.findDOMNode(this.refs[name]).value.trim();
         });
-
-        const instance = axios.create({
-            headers: {"accepts":"application/json"}
+        axios.post('api/cars', newCar).then(responce => {
+            console.log('data is Saved!');
+            console.log(newCar);
+        }, failure => {
+            console.log(failure);
         });
-        instance.post('api/cars', newCar).then(response => {
-            console.log('data is Saved!')
-        });
-        // let xhr = new XMLHttpRequest();
-        // xhr.open('POST', 'http://localhost:8080/api/cars', true);
-        //
-        // xhr.onload = function() {
-        //     alert('Ошибка' + this.responseText);
-        // };
-        // xhr.send(newCar);
-        // fetch()
-        // axios.post('api/cars', newCar).then(responce => {
-        //     console.log('data is Saved!');
-        // });
-        console.log(newCar);
+        this.fetchData();
 
     };
 
@@ -90,14 +93,18 @@ class Cars extends React.Component {
             </p>
         );
         return (
-            <div className="centerContent">
-                <form>
+            <div>
+                <form className="centerContent">
                     {inputs}
                     <Button color="primary" onClick={this.handleSubmit}>Сохранить</Button>
                 </form>
                 <ReactTable
-                    data={this.state.cars}
+                    data={this.state.data}
                     columns={CAR_COLUMNS}
+                    loading={this.state.loading} // Display the loading overlay when we need it
+                    onFetchData={this.fetchData} // Request new data when things change
+                    className="-striped -highlight"
+                    onClick={console.log("!")}
                 />
             </div>
         );

@@ -32,7 +32,7 @@ header {
     justify-content: center;
 }
 
-form {
+form{
     display: flex;
     flex-direction: row;
 }

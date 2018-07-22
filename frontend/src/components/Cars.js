@@ -5,37 +5,6 @@ import axios from 'axios';
 import ReactTable from 'react-table';
 import "react-table/react-table.css";
 
-const CAR_COLUMNS = [
-    {
-        Header: 'Модель',
-        accessor: 'model',
-        maxWidth: 250,
-        className: 'centerContent',
-    },
-    {
-        Header: 'Номер машины',
-        accessor: 'carNumber',
-        maxWidth: 150,
-        className: 'centerContent'
-    },
-    {
-        Header: 'Регион',
-        accessor: 'region',
-        maxWidth: 100,
-        className: 'centerContent'
-    },
-    {
-        Header: 'Год выпуска',
-        accessor: 'manufactureYear',
-        maxWidth: 200,
-        className: 'centerContent'
-    },
-    {
-        Header: 'Примечание',
-        accessor: 'desc',
-    }
-];
-
 const names = ['model', 'carNumber', 'region', 'manufactureYear', 'desc'];
 
 class Cars extends React.Component {
@@ -76,7 +45,7 @@ class Cars extends React.Component {
             newCar[name] = ReactDOM.findDOMNode(this.refs[name]).value.trim();
         });
         axios.post('api/cars', newCar).then(responce => {
-            console.log('data is Saved!');
+            console.log('row is Saved!');
             console.log(newCar);
             this.fetchData();
         }, failure => {
@@ -84,6 +53,27 @@ class Cars extends React.Component {
         });
     };
 
+    createDeleteButton(row) {
+        row["fetchFunc"] = this.fetchData;
+        return (
+            <Button row={row}
+                    color="danger" onClick={this.handleDelete}>Удалить
+            </Button>);
+    }
+
+    handleDelete(e) {
+        e.preventDefault();
+        // TODO: get id with more reasonable way
+        let id = this.row._links.car.href.split("/")[5];
+        console.log(this);
+        axios.delete('/api/cars/' + id).then(responce => {
+            console.log('row is deleted');
+            console.log(this);
+            this.row["fetchFunc"]();
+        }, failure => {
+            console.log(failure);
+        });
+    }
 
     render() {
         var inputs = names.map(name =>
@@ -99,11 +89,52 @@ class Cars extends React.Component {
                 </form>
                 <ReactTable
                     data={this.state.data}
-                    columns={CAR_COLUMNS}
+                    columns={[
+                        {
+                            Header: "id",
+                            accessor: 'id'
+                        },
+                        {
+                            Header: 'Модель',
+                            accessor: 'model',
+                            maxWidth: 250,
+                            className: 'centerContent',
+                        },
+                        {
+                            Header: 'Номер машины',
+                            accessor: 'carNumber',
+                            maxWidth: 150,
+                            className: 'centerContent'
+                        },
+                        {
+                            Header: 'Регион',
+                            accessor: 'region',
+                            maxWidth: 100,
+                            className: 'centerContent'
+                        },
+                        {
+                            Header: 'Год выпуска',
+                            accessor: 'manufactureYear',
+                            maxWidth: 200,
+                            className: 'centerContent'
+                        },
+                        {
+                            Header: 'Примечание',
+                            accessor: 'desc',
+                        },
+                        {
+                            accessor: () => 'x', // this value is not important
+                            id: "_selector",
+                            Header: "Delete",
+                            minWidth: 300,
+                            Cell: ci => {
+                                return this.createDeleteButton.bind(this)(ci.original)
+                            }
+                        },
+                    ]}
                     loading={this.state.loading} // Display the loading overlay when we need it
                     onFetchData={this.fetchData} // Request new data when things change
                     className="-striped -highlight"
-                    onClick={console.log("!")}
                 />
             </div>
         );

@@ -1,11 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Button} from 'reactstrap';
+import {Button,  InputGroup, InputGroupText, InputGroupAddon, Input} from 'reactstrap';
 import axios from 'axios';
 import ReactTable from 'react-table';
 import "react-table/react-table.css";
 
-const names = ['model', 'carNumber', 'region', 'manufactureYear', 'desc'];
+const names = { model: "Модель", carNumber: "Номер машины", region: "Регион", manufactureYear:"Год выпуска",
+    desc:"Примечание" };
 
 class Cars extends React.Component {
 
@@ -41,7 +42,7 @@ class Cars extends React.Component {
     handleSubmit(e) {
         e.preventDefault();
         let newCar = {};
-        names.forEach(name => {
+        Object.keys(names).forEach(name => {
             newCar[name] = ReactDOM.findDOMNode(this.refs[name]).value.trim();
         });
         axios.post('api/cars', newCar).then(responce => {
@@ -76,10 +77,15 @@ class Cars extends React.Component {
     }
 
     render() {
-        var inputs = names.map(name =>
-            <p key={name}>
-                <input type="text" placeholder={name} ref={name} className="field"/>
-            </p>
+        var inputs = Object.keys(names).map(name =>
+            <InputGroup className="InputGroup" key={name + "group"}>
+                <InputGroupAddon key={name + "groupAddon"} addonType="prepend">
+                    <InputGroupText key={name + "groupText"} >{names[name]}</InputGroupText>
+                </InputGroupAddon>
+                {/*<p key={name}>*/}
+                    <Input type="text" ref={name} className="field"/>
+            {/*</p>*/}
+            </InputGroup>
         );
         return (
             <div>
@@ -91,31 +97,27 @@ class Cars extends React.Component {
                     data={this.state.data}
                     columns={[
                         {
-                            Header: "id",
-                            accessor: 'id'
-                        },
-                        {
                             Header: 'Модель',
                             accessor: 'model',
-                            maxWidth: 250,
+                            minWidth: 100,
                             className: 'centerContent',
                         },
                         {
                             Header: 'Номер машины',
                             accessor: 'carNumber',
-                            maxWidth: 150,
+                            minWidth: 100,
                             className: 'centerContent'
                         },
                         {
                             Header: 'Регион',
                             accessor: 'region',
-                            maxWidth: 100,
+                            minWidth: 50,
                             className: 'centerContent'
                         },
                         {
                             Header: 'Год выпуска',
                             accessor: 'manufactureYear',
-                            maxWidth: 200,
+                            minWidth: 50,
                             className: 'centerContent'
                         },
                         {
@@ -124,9 +126,9 @@ class Cars extends React.Component {
                         },
                         {
                             accessor: () => 'x', // this value is not important
-                            id: "_selector",
-                            Header: "Delete",
-                            minWidth: 300,
+                            id: "_deletion",
+                            className: 'toRight',
+                            minWidth: 100,
                             Cell: ci => {
                                 return this.createDeleteButton.bind(this)(ci.original)
                             }

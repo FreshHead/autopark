@@ -32,7 +32,15 @@ header {
     justify-content: center;
 }
 
+.toRight {
+    text-align: right;
+}
+
 form{
     display: flex;
     flex-direction: row;
+}
+
+.InputGroup {
+    margin: 5px;
 }

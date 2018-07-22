@@ -78,11 +78,10 @@ class Cars extends React.Component {
         axios.post('api/cars', newCar).then(responce => {
             console.log('data is Saved!');
             console.log(newCar);
+            this.fetchData();
         }, failure => {
             console.log(failure);
         });
-        this.fetchData();
-
     };
 
 

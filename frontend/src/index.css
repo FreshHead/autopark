@@ -32,9 +32,9 @@ header {
     justify-content: center;
 }
 
-.toRight {
-    text-align: right;
-}
+/*.toRight {*/
+    /*text-align: right;*/
+/*}*/
 
 form{
     display: flex;

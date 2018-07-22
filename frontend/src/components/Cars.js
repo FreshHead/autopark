@@ -17,6 +17,7 @@ class Cars extends React.Component {
             loading: true
         };
         this.fetchData = this.fetchData.bind(this);
+        this.renderEditable = this.renderEditable.bind(this);
 
         this.handleSubmit = this.handleSubmit.bind(this);
 
@@ -54,10 +55,36 @@ class Cars extends React.Component {
         });
     };
 
+    createChangeButton(row) {
+        row["fetchFunc"] = this.fetchData;
+        return (
+            <Button row={row} block
+                    color="primary" onClick={this.handleChange}>Сохранить
+            </Button>);
+    }
+
+    handleChange(e) {
+        e.preventDefault();
+        // TODO: get id with more reasonable way
+        let id = this.row._links.car.href.split("/")[5];
+        let data = {};
+        Object.keys(names).forEach(name => {
+            data[name] = this.row[name];
+        });
+        console.log(data);
+        axios.put('/api/cars/' + id, data).then(responce => {
+            console.log('row is added');
+            console.log(this);
+            this.row["fetchFunc"]();
+        }, failure => {
+            console.log(failure);
+        });
+    }
+
     createDeleteButton(row) {
         row["fetchFunc"] = this.fetchData;
         return (
-            <Button row={row}
+            <Button row={row} block
                     color="danger" onClick={this.handleDelete}>Удалить
             </Button>);
     }
@@ -66,7 +93,6 @@ class Cars extends React.Component {
         e.preventDefault();
         // TODO: get id with more reasonable way
         let id = this.row._links.car.href.split("/")[5];
-        console.log(this);
         axios.delete('/api/cars/' + id).then(responce => {
             console.log('row is deleted');
             console.log(this);
@@ -75,7 +101,23 @@ class Cars extends React.Component {
             console.log(failure);
         });
     }
-
+    renderEditable(cellInfo) {
+        return (
+            <div
+                style={{ backgroundColor: "#fafafa" }}
+                contentEditable
+                suppressContentEditableWarning
+                onBlur={e => {
+                    const data = [...this.state.data];
+                    data[cellInfo.index][cellInfo.column.id] = e.target.innerHTML;
+                    this.setState({ data });
+                }}
+                dangerouslySetInnerHTML={{
+                    __html: this.state.data[cellInfo.index][cellInfo.column.id]
+                }}
+            />
+        );
+    }
     render() {
         var inputs = Object.keys(names).map(name =>
             <InputGroup className="InputGroup" key={name + "group"}>
@@ -91,7 +133,7 @@ class Cars extends React.Component {
             <div>
                 <form className="centerContent">
                     {inputs}
-                    <Button color="primary" onClick={this.handleSubmit}>Сохранить</Button>
+                    <Button color="success" block onClick={this.handleSubmit}>Добавить</Button>
                 </form>
                 <ReactTable
                     data={this.state.data}
@@ -101,34 +143,48 @@ class Cars extends React.Component {
                             accessor: 'model',
                             minWidth: 100,
                             className: 'centerContent',
+                            Cell: this.renderEditable
                         },
                         {
                             Header: 'Номер машины',
                             accessor: 'carNumber',
                             minWidth: 100,
-                            className: 'centerContent'
+                            className: 'centerContent',
+                            Cell: this.renderEditable
                         },
                         {
                             Header: 'Регион',
                             accessor: 'region',
                             minWidth: 50,
-                            className: 'centerContent'
+                            className: 'centerContent',
+                            Cell: this.renderEditable
                         },
                         {
                             Header: 'Год выпуска',
                             accessor: 'manufactureYear',
                             minWidth: 50,
-                            className: 'centerContent'
+                            className: 'centerContent',
+                            Cell: this.renderEditable
                         },
                         {
                             Header: 'Примечание',
                             accessor: 'desc',
+                            Cell: this.renderEditable
                         },
                         {
                             accessor: () => 'x', // this value is not important
+                            id: "_change",
+                            className: 'toRight',
+                            maxWidth: 150,
+                            Cell: ci => {
+                                return this.createChangeButton.bind(this)(ci.original)
+                            }
+                        },
+                        {
+                            accessor: () => 'y', // this value is not important
                             id: "_deletion",
                             className: 'toRight',
-                            minWidth: 100,
+                            maxWidth: 150,
                             Cell: ci => {
                                 return this.createDeleteButton.bind(this)(ci.original)
                             }

@@ -8,6 +8,8 @@ import "react-table/react-table.css";
 const names = { model: "Модель", carNumber: "Номер машины", region: "Регион", manufactureYear:"Год выпуска",
     desc:"Примечание" };
 
+const url = "/api/cars";
+
 class Cars extends React.Component {
 
     constructor(props) {
@@ -25,7 +27,7 @@ class Cars extends React.Component {
 
     fetchData(state, instance) {
         this.setState({loading: true});
-        axios.get('/api/cars')
+        axios.get(url)
             .then(res => {
                 this.setState({
                     data: res.data._embedded.cars,
@@ -42,13 +44,13 @@ class Cars extends React.Component {
 
     handleSubmit(e) {
         e.preventDefault();
-        let newCar = {};
+        let newElement = {};
         Object.keys(names).forEach(name => {
-            newCar[name] = ReactDOM.findDOMNode(this.refs[name]).value.trim();
+            newElement[name] = ReactDOM.findDOMNode(this.refs[name]).value.trim();
         });
-        axios.post('api/cars', newCar).then(responce => {
+        axios.post(url, newElement).then(responce => {
             console.log('row is Saved!');
-            console.log(newCar);
+            console.log(newElement);
             this.fetchData();
         }, failure => {
             console.log(failure);
@@ -72,7 +74,7 @@ class Cars extends React.Component {
             data[name] = this.row[name];
         });
         console.log(data);
-        axios.put('/api/cars/' + id, data).then(responce => {
+        axios.put(url + "/" + id, data).then(responce => {
             console.log('row is added');
             console.log(this);
             this.row["fetchFunc"]();
@@ -93,7 +95,7 @@ class Cars extends React.Component {
         e.preventDefault();
         // TODO: get id with more reasonable way
         let id = this.row._links.car.href.split("/")[5];
-        axios.delete('/api/cars/' + id).then(responce => {
+        axios.delete(url + "/" + id).then(responce => {
             console.log('row is deleted');
             console.log(this);
             this.row["fetchFunc"]();

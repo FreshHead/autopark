@@ -34,6 +34,7 @@ public class DatabaseLoader implements CommandLineRunner {
 
         this.carRepository.saveAll(cars);
 
+    // TODO: Попробуй вместо null передовать пустой Car в wheeler
         ArrayList<Wheeler> wheelers = new ArrayList<>();
         wheelers.add(new Wheeler("Павлов", "Сергей", "Константинович", 1994, "Сын Павлова К.И.", cars.get(0)));
         wheelers.add(new Wheeler("Мартынов", "Константин", "Васильевич", 1960, "Опытный водитель", null));
